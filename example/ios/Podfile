@@ -33,7 +33,8 @@ target 'Runner' do
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 
-  pod 'oppwamobile', :git => 'https://github.com/nyartech/oppwamobile-ios-sdk.git', :tag => '4.8.0'
+  # hyperpay plugin 
+  pod 'hyperpay_sdk', :git => 'https://github.com/abdullahalamodi/hyperpay_sdk.git'
   $static_framework = ['hyperpay']
 
   pre_install do |installer|

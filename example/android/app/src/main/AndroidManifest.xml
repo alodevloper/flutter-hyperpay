@@ -17,10 +17,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
+                <data android:scheme="com.nyartech.hyperpayexample.payments" />
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="com.nyartech.hyperpayexample.payments" />
             </intent-filter>
 
             <!-- Displays an Android View that continues showing the launch screen

@@ -94,25 +94,37 @@ public class SwiftHyperpayPlugin: UINavigationController, FlutterPlugin, SFSafar
         let instance = SwiftHyperpayPlugin()
         let buttonFactory = ApplePayButtonViewFactory(messenger: registrar.messenger())
 
-        if let delegate = UIApplication.shared.connectedScenes.flatMap { ($0 as? UIWindowScene)?.windows ?? [] }.first { $0.isKeyWindow }  {
+        if #available(iOS 13.0, *) {
+            if let delegate = UIApplication.shared.connectedScenes
+                .compactMap({ $0 as? UIWindowScene })
+                .flatMap({ $0.windows })
+                .first(where: { $0.isKeyWindow }) {
 
-            let controller = delegate.window?.rootViewController as? FlutterViewController
+                let controller = delegate.rootViewController as? FlutterViewController
+                let navigationController = UINavigationController(rootViewController: controller!)
 
+                delegate.rootViewController?.view.removeFromSuperview()
+                delegate.rootViewController = navigationController
+
+                navigationController.setNavigationBarHidden(true, animated: false)
+
+                delegate.makeKeyAndVisible()
+            }
+        } else {
+            let controller = UIApplication.shared.keyWindow?.rootViewController as? FlutterViewController
             let navigationController = UINavigationController(rootViewController: controller!)
 
-
-            delegate.window?.rootViewController?.view.removeFromSuperview()
-            delegate.window?.rootViewController = navigationController
+            UIApplication.shared.keyWindow?.rootViewController?.view.removeFromSuperview()
+            UIApplication.shared.keyWindow?.rootViewController = navigationController
 
             navigationController.setNavigationBarHidden(true, animated: false)
-        
-             delegate.window?.makeKeyAndVisible()
-    
+
+            UIApplication.shared.keyWindow?.makeKeyAndVisible()
         }
-        
-        registrar.register(buttonFactory, withId: "plugins.nyartech.com/hyperpay/apple_pay_button")
-        registrar.addMethodCallDelegate(instance, channel: channel)
-        registrar.addApplicationDelegate(instance)
+
+    registrar.register(buttonFactory, withId: "plugins.nyartech.com/hyperpay/apple_pay_button")
+    registrar.addMethodCallDelegate(instance, channel: channel)
+    registrar.addApplicationDelegate(instance)
     }
     
     public func application(_ application: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
@@ -147,15 +159,15 @@ public class SwiftHyperpayPlugin: UINavigationController, FlutterPlugin, SFSafar
             if(paymentMode == "LIVE") {
                 self.provider.mode = OPPProviderMode.live
             } else {
-                let visaSchemeConfig = OPPThreeDSSchemeConfig(dsRefId: "TEST_VISA_DS_ID",
-                                                              dsEncryptCert: DS_ENCRYPT_CERT,
-                                                              dsCaRootCert: DS_ROOT_CA_CERT)
+                // let visaSchemeConfig = OPPThreeDSSchemeConfig(dsRefId: "TEST_VISA_DS_ID",
+                //                                               dsEncryptCert: DS_ENCRYPT_CERT,
+                //                                               dsCaRootCert: DS_ROOT_CA_CERT)
                 
-                OPPThreeDSService.sharedInstance.setCustomSchemeConfig(["VISA": visaSchemeConfig])
+                // OPPThreeDSService.sharedInstance.setCustomSchemeConfig(["VISA": visaSchemeConfig])
 
-                let paymentBrands = ["VISA"]
+                // let paymentBrands = ["VISA"]
                 
-                OPPThreeDSService.sharedInstance.initialize(transactionMode: .test, paymentBrands: paymentBrands)
+                // OPPThreeDSService.sharedInstance.initialize(transactionMode: .test, paymentBrands: paymentBrands)
             }
 
             self.provider.threeDSEventListener = self

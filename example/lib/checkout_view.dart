@@ -1,6 +1,11 @@
+import 'dart:convert';
+import 'dart:developer' as dev;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+// ignore: depend_on_referenced_packages
+import 'package:http/http.dart' as http;
 import 'package:hyperpay/hyperpay.dart';
 import 'package:hyperpay_example/constants.dart';
 import 'package:hyperpay_example/formatters.dart';
@@ -39,39 +44,38 @@ class _CheckoutViewState extends State<CheckoutView> {
     hyperpay = await HyperpayPlugin.setup(config: TestConfig());
   }
 
-  /// Initialize HyperPay session
-  Future<void> initPaymentSession(
-    BrandType brandType,
-    double amount,
-  ) async {
-    CheckoutSettings _checkoutSettings = CheckoutSettings(
-      brand: brandType,
-      amount: amount,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      additionalParams: {
-        'merchantTransactionId': '#123456',
-        'merchantCustomerId': '#0845983457',
-        'givenName': 'harvey',
-        'surname': 'grey',
-        'email': 'test@test.com',
-        'mobile': '+966551234567',
-        'street1': 'Test',
-        'city': 'Riyadh',
-        'state': 'State',
-        'country': 'SA',
-        'postcode': '12345',
-        'brand': 'mada',
-      },
-    );
+  Future<String?> getCheckOut() async {
+    final url =
+        Uri.parse('https://dev.hyperpay.com/hyperpay-demo/getcheckoutid.php');
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      dev.log(json.decode(response.body)['id'].toString(), name: 'checkoutId');
+      return json.decode(response.body)['id'];
+    } else {
+      dev.log(response.body.toString(), name: 'STATUS CODE ERROR');
+      return null;
+    }
+  }
 
-    hyperpay.initSession(checkoutSetting: _checkoutSettings);
-    sessionCheckoutID = await hyperpay.getCheckoutID;
+  Future<void> getpaymentstatus(String checkoutid) async {
+    bool status;
+
+    final Uri myUrl = Uri.parse(
+      'https://dev.hyperpay.com/hyperpay-demo/getpaymentstatus.php?id=$checkoutid',
+    );
+    final response = await http.post(
+      myUrl,
+      headers: {'Accept': 'application/json'},
+    );
+    status = response.body.contains('error');
+
+    final data = json.decode(response.body);
+
+    print("payment_status: ${data["result"].toString()}");
   }
 
   Future<void> onPay(context) async {
-    final bool valid = Form.of(context)?.validate() ?? false;
+    final bool valid = Form.of(context).validate() ?? false;
 
     if (valid) {
       setState(() {
@@ -84,17 +88,13 @@ class _CheckoutViewState extends State<CheckoutView> {
         cardNumber: cardNumberController.text.replaceAll(' ', ''),
         cvv: cvvController.text,
         expiryMonth: expiryController.text.split('/')[0],
-        expiryYear: '20' + expiryController.text.split('/')[1],
+        expiryYear: '20${expiryController.text.split('/')[1]}',
       );
 
       try {
-        // Start transaction
-        if (sessionCheckoutID.isEmpty) {
-          // Only get a new checkoutID if there is no previous session pending now
-          await initPaymentSession(brandType, 1);
-        }
+        final checkoutId = await getCheckOut();
 
-        final result = await hyperpay.pay(card);
+        final result = await hyperpay.pay(checkoutId!, BrandType.mada, card);
 
         switch (result) {
           case PaymentStatus.init:
@@ -118,6 +118,7 @@ class _CheckoutViewState extends State<CheckoutView> {
             );
             break;
           case PaymentStatus.successful:
+            await getpaymentstatus(checkoutId);
             sessionCheckoutID = '';
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -160,12 +161,6 @@ class _CheckoutViewState extends State<CheckoutView> {
       isLoading = true;
     });
 
-    // Start transaction
-    if (sessionCheckoutID.isEmpty) {
-      // Only get a new checkoutID if there is no previous session pending now
-      await initPaymentSession(BrandType.applepay, amount);
-    }
-
     final applePaySettings = ApplePaySettings(
       amount: amount,
       appleMerchantId: 'merchant.com.emaan.app',
@@ -174,7 +169,9 @@ class _CheckoutViewState extends State<CheckoutView> {
     );
 
     try {
-      await hyperpay.payWithApplePay(applePaySettings);
+      final checkoutId = await getCheckOut();
+      await hyperpay.payWithApplePay(checkoutId!, applePaySettings);
+      await getpaymentstatus(checkoutId);
     } catch (exception) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

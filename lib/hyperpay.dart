@@ -5,14 +5,10 @@
 library hyperpay;
 
 import 'dart:async';
-import 'dart:convert';
-import 'dart:developer';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart';
 
 part 'src/apple_pay_button.dart';
 part 'src/config.dart';

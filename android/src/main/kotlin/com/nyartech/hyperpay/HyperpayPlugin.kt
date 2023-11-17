@@ -233,7 +233,7 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
      * a PlatformException to Flutter if any are not valid.
      * */
     private fun checkCreditCardValid(result: Result) {
-        if (!CardPaymentParams.isNumberValid(cardNumber)) {
+        if (!CardPaymentParams.isNumberValid(cardNumber,true)) {
             result.error(
                     "1.1",
                     "Card number is not valid for brand ${brand.name}",

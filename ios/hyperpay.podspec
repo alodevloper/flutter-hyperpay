@@ -14,7 +14,7 @@ A new flutter plugin project.
   s.author           = { 'Your Company' => 'email@example.com' }
   s.source           = { :path => '.' }
   s.dependency 'Flutter'
-  s.platform = :ios, '13.0'
+  s.platform = :ios, '9.0'
 
   s.source_files     = 'Classes/**/*'
   
@@ -23,5 +23,5 @@ A new flutter plugin project.
   s.swift_version = '5.0'
   s.frameworks  = 'PassKit'
 
-  s.dependency 'oppwamobile', '~> 4.8.0'
+  s.dependency 'hyperpay_sdk', '~> 6.0.0'
 end

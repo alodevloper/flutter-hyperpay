@@ -33,16 +33,16 @@ class LiveConfig implements HyperpayConfig {
 // Setup using your own endpoints.
 // https://wordpresshyperpay.docs.oppwa.com/tutorials/mobile-sdk/integration/server.
 
-String _host = '';
+String _host = 'dev.hyperpay.com';
 
 Uri _checkoutEndpoint = Uri(
   scheme: 'https',
   host: _host,
-  path: '',
+  path: '/hyperpay-demo/getcheckoutid.php',
 );
 
 Uri _statusEndpoint = Uri(
   scheme: 'https',
   host: _host,
-  path: '',
+  path: '/hyperpay-demo/getpaymentstatus.php',
 );
