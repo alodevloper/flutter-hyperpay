@@ -4,7 +4,6 @@ import 'dart:developer' as dev;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// ignore: depend_on_referenced_packages
 import 'package:http/http.dart' as http;
 import 'package:hyperpay/hyperpay.dart';
 import 'package:hyperpay_example/constants.dart';

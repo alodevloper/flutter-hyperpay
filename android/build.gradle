@@ -1,6 +1,5 @@
 group 'com.nyartech.hyperpay'
-version '1.0-SNAPSHOT'
-
+version '1.0'
 
 buildscript {
     repositories {
@@ -24,6 +23,7 @@ rootProject.allprojects {
 }
 
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 32
@@ -40,9 +40,10 @@ android {
 
 dependencies {
     api(name: "oppwa.mobile-6.0.0-release", ext: 'aar')
-    releaseImplementation (name: "ipworks3ds_sdk_8648_deploy", ext: 'aar')
-    debugImplementation (name: "ipworks3ds_sdk_8648", ext: 'aar') // debug    implementation "com.google.android.material:material:1.7.0"
-    implementation "androidx.appcompat:appcompat:1.5.1"
+    api(name: "ipworks3ds_sdk_8648_deploy", ext: 'aar')
+    // debugImplementation(name: "ipworks3ds_sdk_8648", ext: 'aar')
+    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'com.google.android.material:material:1.6.1'
     implementation 'com.google.android.gms:play-services-wallet:19.1.0'
     implementation "androidx.browser:browser:1.4.0"
 }
