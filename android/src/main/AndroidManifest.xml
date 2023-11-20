@@ -9,11 +9,6 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
-         <receiver
-            android:name=".CheckoutBroadcastReceiver"
-            android:exported="false" />
-
-
     </application>
 </manifest>
 

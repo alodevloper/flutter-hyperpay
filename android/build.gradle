@@ -34,14 +34,14 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 24
     }
 }
 
 dependencies {
     api(name: "oppwa.mobile-6.0.0-release", ext: 'aar')
-    api(name: "ipworks3ds_sdk_8648_deploy", ext: 'aar')
-    // debugImplementation(name: "ipworks3ds_sdk_8648", ext: 'aar')
+    releaseImplementation(name: "ipworks3ds_sdk_8648_deploy", ext: 'aar')
+    debugImplementation(name: "ipworks3ds_sdk_8648", ext: 'aar')
     implementation 'androidx.appcompat:appcompat:1.4.2'
     implementation 'com.google.android.material:material:1.6.1'
     implementation 'com.google.android.gms:play-services-wallet:19.1.0'

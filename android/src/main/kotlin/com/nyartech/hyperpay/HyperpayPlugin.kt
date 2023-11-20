@@ -281,7 +281,7 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
 
                 val session = mCustomTabsClient?.newSession(object : CustomTabsCallback() {
                     override fun onNavigationEvent(navigationEvent: Int, extras: Bundle?) {
-                        Log.w(TAG, "onNavigationEvent: Code = $navigationEvent")
+                        val w = Log.w(TAG, "onNavigationEvent: Code = $navigationEvent")
                         when (navigationEvent) {
                             TAB_HIDDEN -> {
                                 if (redirectData.isEmpty()) {
@@ -289,6 +289,7 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
                                     success("canceled")
                                 }
                             }
+
                         }
                     }
                 })

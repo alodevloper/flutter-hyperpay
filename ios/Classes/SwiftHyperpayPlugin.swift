@@ -162,12 +162,9 @@ public class SwiftHyperpayPlugin: UINavigationController, FlutterPlugin, SFSafar
                 // let visaSchemeConfig = OPPThreeDSSchemeConfig(dsRefId: "TEST_VISA_DS_ID",
                 //                                               dsEncryptCert: DS_ENCRYPT_CERT,
                 //                                               dsCaRootCert: DS_ROOT_CA_CERT)
-                
-                // OPPThreeDSService.sharedInstance.setCustomSchemeConfig(["VISA": visaSchemeConfig])
-
                 // let paymentBrands = ["VISA"]
-                
-                // OPPThreeDSService.sharedInstance.initialize(transactionMode: .test, paymentBrands: paymentBrands)
+                // OPPThreeDSService.sharedInstance.setCustomSchemeConfig(["VISA": visaSchemeConfig])
+                // OPPThreeDSService.sharedInstance.initialize(transactionMode: OPPProviderMode.test, paymentBrands: paymentBrands)
             }
 
             self.provider.threeDSEventListener = self
@@ -270,14 +267,12 @@ public class SwiftHyperpayPlugin: UINavigationController, FlutterPlugin, SFSafar
                     }
                 } else {
                     // Redirect from the 3DSecure page
-                    if (transaction.threeDS2Info != nil)
-                    {
+                    if (transaction.threeDS2Info != nil){
                         UIApplication.shared.delegate?.window??.rootViewController?.dismiss(animated: true)
                         self.paymentResult!("success")
                     }
-                    
+                    // when redirect
                     if transaction.type == .asynchronous {
-                        
                         self.safariVC = SFSafariViewController(url: self.transaction!.redirectURL!)
                         self.safariVC?.delegate = self;
                         UIApplication.shared.windows.first?.rootViewController!.present(self.safariVC!, animated: true, completion: nil)
