@@ -8,6 +8,7 @@ part of hyperpay;
 // These expressions were chosen according to this article.
 // https://uxplanet.org/streamlining-the-checkout-experience-4-4-6793dad81360
 
+RegExp _americanExpressRegExp = RegExp(r'^3[47][0-9]{13}$');
 RegExp _visaRegExp = RegExp(r'^4[0-9]{12}(?:[0-9]{3})?$');
 RegExp _mastercardRegExp = RegExp(r'^5[1-5][0-9]{5,}$');
 RegExp _madaRegExpV = RegExp(
@@ -26,6 +27,7 @@ extension DetectBrand on String {
         _madaRegExpV.hasMatch(cleanNumber);
     bool _isVISA = _visaRegExp.hasMatch(cleanNumber);
     bool _isMASTERCARD = _mastercardRegExp.hasMatch(cleanNumber);
+    bool _isAmericanExpress = _americanExpressRegExp.hasMatch(cleanNumber);
 
     if (_isMADA) {
       return BrandType.mada;
@@ -33,6 +35,8 @@ extension DetectBrand on String {
       return BrandType.visa;
     } else if (_isMASTERCARD) {
       return BrandType.master;
+    } else if (_isAmericanExpress) {
+      return BrandType.americanExpress;
     } else {
       return BrandType.none;
     }
@@ -40,65 +44,45 @@ extension DetectBrand on String {
 }
 
 extension BrandTypeExtension on BrandType {
-  /// Get the entity ID of this brand based on merchant configuration.
-  String? entityID(HyperpayConfig config) {
-    String? _entityID = '';
-    switch (this) {
-      case BrandType.visa:
-        _entityID = config.creditcardEntityID;
-        break;
-      case BrandType.master:
-        _entityID = config.creditcardEntityID;
-        break;
-      case BrandType.mada:
-        _entityID = config.madaEntityID;
-        break;
-      case BrandType.applepay:
-        _entityID = config.applePayEntityID;
-        break;
-
-      default:
-        _entityID = null;
-    }
-    return _entityID;
-  }
-
   /// Match the string entered by user against RegExp rules
   /// for each card type.
   ///
-  /// TODO: localize the messages.
-  String? validateNumber(String number) {
+  /// [locale] 'en', 'ar'
+  String? validateNumber(String number, {String locale = 'en'}) {
+    final _messages = locale == 'ar' ? ArMessages() : EnMessages();
     // Remove the white spaces inserted by formatters
     final cleanNumber = number.replaceAll(' ', '');
-
+    if (cleanNumber.isEmpty) {
+      return _messages.reqired();
+    }
     switch (this) {
       case BrandType.visa:
         if (_visaRegExp.hasMatch(cleanNumber)) {
           return null;
-        } else if (cleanNumber.isEmpty) {
-          return "Required";
         } else {
-          return "Inavlid VISA number";
+          return _messages.inavlidVisaNumber();
         }
       case BrandType.master:
         if (_mastercardRegExp.hasMatch(cleanNumber)) {
           return null;
-        } else if (cleanNumber.isEmpty) {
-          return "Required";
         } else {
-          return "Inavlid MASTER CARD number";
+          return _messages.inavlidMastercardNumber();
+        }
+      case BrandType.americanExpress:
+        if (_americanExpressRegExp.hasMatch(cleanNumber)) {
+          return null;
+        } else {
+          return _messages.inavlidAmericanExpressNumber();
         }
       case BrandType.mada:
         if (_madaRegExpV.hasMatch(cleanNumber) ||
             _madaRegExpM.hasMatch(cleanNumber)) {
           return null;
-        } else if (cleanNumber.isEmpty) {
-          return "Required";
         } else {
-          return "Inavlid MADA number";
+          return _messages.inavlidMadaNumber();
         }
       default:
-        return "No brand provided";
+        return _messages.noBrandProvided();
     }
   }
 
@@ -111,6 +95,8 @@ extension BrandTypeExtension on BrandType {
         return 16;
       case BrandType.master:
         return 16;
+      case BrandType.americanExpress:
+        return 15;
       case BrandType.mada:
         return 16;
       default:

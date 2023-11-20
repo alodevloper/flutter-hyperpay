@@ -93,7 +93,7 @@ class HyperpayPlugin {
         'start_payment_transaction',
         {
           'checkoutID': checkoutId,
-          'brand': BrandType.applepay.name.toUpperCase(),
+          'brand': BrandType.applePay.name.toUpperCase(),
           ...applePay.toJson(),
         },
       );

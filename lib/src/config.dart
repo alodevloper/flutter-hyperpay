@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 // Copyright 2022 NyarTech LLC. All rights reserved.
 // Use of this source code is governed by a BSD-style license
 // that can be found in the LICENSE file.
@@ -18,11 +19,19 @@ part of hyperpay;
 ///   String? madaEntityID = 'PASTE MADA ENTITY ID';
 ///}
 /// ```
+/// config for future other parameters
 class HyperpayConfig {
-  String? creditcardEntityID;
-  String? madaEntityID;
-  String? applePayEntityID;
-  late Uri checkoutEndpoint;
-  late Uri statusEndpoint;
   PaymentMode paymentMode = PaymentMode.none;
+  HyperpayConfig._({
+    required this.paymentMode,
+  });
+  //test
+  factory HyperpayConfig.test() => HyperpayConfig._(
+        paymentMode: PaymentMode.test,
+      );
+
+  //live
+  factory HyperpayConfig.live() => HyperpayConfig._(
+        paymentMode: PaymentMode.live,
+      );
 }

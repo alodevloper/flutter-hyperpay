@@ -29,9 +29,10 @@ class CardInfo {
     };
   }
 
-  static String? validateDate(String value) {
+  static String? validateDate(String value, {String locale = 'en'}) {
+    final _messages = locale == 'ar' ? ArMessages() : EnMessages();
     if (value.isEmpty) {
-      return "Required";
+      return _messages.reqired();
     }
 
     int year;
@@ -52,18 +53,18 @@ class CardInfo {
 
     if ((month < 1) || (month > 12)) {
       // A valid month is between 1 (January) and 12 (December)
-      return 'Expiry month is invalid';
+      return _messages.expiryMonthIsInvalid();
     }
 
     var fourDigitsYear = convertYearTo4Digits(year);
     if ((fourDigitsYear < 1) || (fourDigitsYear > 2099)) {
       // We are assuming a valid year should be between 1 and 2099.
       // Note that, it's valid doesn't mean that it has not expired.
-      return 'Expiry year is invalid';
+      return _messages.expiryYearIsInvalid();
     }
 
     if (!hasDateExpired(month, year)) {
-      return "Card has expired";
+      return _messages.cardHasExpired();
     }
     return null;
   }
@@ -106,13 +107,14 @@ class CardInfo {
     return fourDigitsYear < now.year;
   }
 
-  static String? validateCVV(String value) {
+  static String? validateCVV(String value, {String locale = 'en'}) {
+    final _messages = locale == 'ar' ? ArMessages() : EnMessages();
     if (value.isEmpty) {
-      return "Required";
+      return _messages.reqired();
     }
 
     if (value.length < 3 || value.length > 4) {
-      return "CVV is invalid";
+      return _messages.cVVIsInvalid();
     }
     return null;
   }

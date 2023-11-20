@@ -12,7 +12,11 @@ enum BrandType {
 
   mada,
 
-  applepay,
+  applePay,
+
+  stcPay,
+
+  americanExpress,
 
   /// If no brand is chosen, use none to avoid
   /// any unnecessary errors.

@@ -23,6 +23,7 @@ part 'src/extensions/brands_ext.dart';
 part 'src/extensions/payment_mode_ext.dart';
 part 'src/extensions/payment_status_ext.dart';
 part 'src/hyperpay.dart';
+part 'src/localizations.dart';
 part 'src/models/apple_pay_settings.dart';
 part 'src/models/card_info.dart';
 part 'src/models/checkout_settings.dart';
