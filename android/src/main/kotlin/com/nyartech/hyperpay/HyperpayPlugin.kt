@@ -27,6 +27,7 @@ import com.oppwa.mobile.connect.payment.card.*
 import com.oppwa.mobile.connect.provider.*
 
 
+
 /** HyperpayPlugin */
 class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, ActivityAware, ThreeDSWorkflowListener {
     private val TAG = "HyperpayPlugin"
@@ -56,6 +57,9 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
     private var expiryMonth: String = ""
     private var expiryYear: String = ""
     private var cvv: String = ""
+
+    // stc pay phone number
+    private var phoneNumber: String = ""
 
     private var shopperResultUrl: String = ""
 
@@ -192,6 +196,31 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
                             "Please provide a valid brand",
                             ""
                     )
+                    Brand.STCPAY -> {
+                        checkoutID = (args["checkoutID"] as String?)!!
+                        phoneNumber = (args["phoneNumber"] as String?)!!
+
+                        val paymentParams: STCPayPaymentParams = STCPayPaymentParams(
+                            checkoutID, 
+                            STCPayVerificationOption.MOBILE_PHONE,
+                        );
+
+                        paymentParams.mobilePhoneNumber = phoneNumber;
+
+                        //Set shopper result URL
+                        paymentParams.shopperResultUrl = "$shopperResultUrl://result"
+
+                        try {
+                            val transaction = Transaction(paymentParams)
+                            paymentProvider?.submitTransaction(transaction, this)
+                        } catch (e: PaymentException) {
+                            result.error(
+                                "0.2",
+                                e.localizedMessage,
+                                ""
+                            )
+                        }
+                    }
                     else -> {
                         checkCreditCardValid(result)
 
@@ -213,7 +242,7 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
                             paymentProvider?.submitTransaction(transaction, this)
                         } catch (e: PaymentException) {
                             result.error(
-                                    "0.2",
+                                    "0.3",
                                     e.localizedMessage,
                                     ""
                             )

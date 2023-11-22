@@ -12,5 +12,6 @@ enum Brand: String {
     case MASTER = "MASTER"
     case MADA = "MADA"
     case APPLEPAY = "APPLEPAY"
+    case STCPAY = "STCPAY"
     case UNKNOWN = "UNKNOWN"
 }

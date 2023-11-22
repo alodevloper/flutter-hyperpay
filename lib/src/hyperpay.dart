@@ -112,4 +112,36 @@ class HyperpayPlugin {
       rethrow;
     }
   }
+
+  /// Perform a transaction natively with Apple Pay.
+  ///
+  /// This method will throw a [NOT_SUPPORTED] error on any platform other than iOS.
+  Future<PaymentStatus> payWithStcPay(
+    String checkoutId,
+    String phoneNumber,
+  ) async {
+    try {
+      final result = await _channel.invokeMethod(
+        'start_payment_transaction',
+        {
+          'checkoutID': checkoutId,
+          'brand': BrandType.stcPay.name.toUpperCase(),
+          'phoneNumber': phoneNumber,
+        },
+      );
+
+      debugPrint('HyperpayPlugin/platformResponse: $result');
+
+      if (result == 'synchronous' || result == 'success') {
+        return PaymentStatus.successful;
+      } else if (result == 'canceled') {
+        return PaymentStatus.init;
+      } else {
+        return PaymentStatus.rejected;
+      }
+    } catch (e) {
+      debugPrint('HyperpayPlugin/platformResponse: $e');
+      rethrow;
+    }
+  }
 }

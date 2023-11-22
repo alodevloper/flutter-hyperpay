@@ -30,6 +30,9 @@ public class SwiftHyperpayPlugin: UINavigationController, FlutterPlugin, SFSafar
     var appleMerchantId:String = ""
     var label:String = ""
     var amount:Double = 0.0
+
+    // stc pay
+    var phoneNumber:String = ""
     
     var transaction:OPPTransaction?
     var paymentResult: FlutterResult?
@@ -197,6 +200,8 @@ public class SwiftHyperpayPlugin: UINavigationController, FlutterPlugin, SFSafar
                 return
             case Brand.APPLEPAY:
                 onApplePay(args: args)
+            case Brand.STCPAY:
+                onStcPay(args: args)
             default:
                 // Default goes for credit cards (VISA, MADA and MasterCard)
                 onCreditCard(args: args)
@@ -208,29 +213,16 @@ public class SwiftHyperpayPlugin: UINavigationController, FlutterPlugin, SFSafar
             )
         }
     }
-    
-    private func onCreditCard(args:Dictionary<String, Any>) {
-        // Collecting card details coming from the platform channel arguments
-        let card = (args["card"] as? Dictionary<String, Any>) ?? Dictionary()
-        self.cardHolder = card["holder"] as! String
-        self.cardNumber = card["number"] as! String
-        self.expiryMonth = card["expiryMonth"] as! String
-        self.expiryYear = card["expiryYear"] as! String
-        self.cvv = card["cvv"] as! String
+
+
+    private func onStcPay(args:Dictionary<String, Any>) {
+        self.phoneNumber = args["phoneNumber"] as! String
         
-        // Check if credit card params are valid
-        checkCreditCardValid(result: self.paymentResult!)
-        
-        // If all are valid, start a transaction
         do {
-            let params = try OPPCardPaymentParams(
+            // TODO implement stc pay
+            let params = try OPPSTCPayPaymentParams(
                 checkoutID: self.checkoutID,
-                paymentBrand: self.brand.rawValue,
-                holder: self.cardHolder,
-                number: self.cardNumber,
-                expiryMonth: self.expiryMonth,
-                expiryYear: self.expiryYear,
-                cvv: self.cvv
+                phoneNumber: self.phoneNumber,
             )
             
             params.shopperResultURL = Bundle.main.bundleIdentifier! + shopperResultURLSuffix
@@ -303,6 +295,105 @@ public class SwiftHyperpayPlugin: UINavigationController, FlutterPlugin, SFSafar
             )
         }
     }
+
+
+    
+    private func onCreditCard(args:Dictionary<String, Any>) {
+        // Collecting card details coming from the platform channel arguments
+        let card = (args["card"] as? Dictionary<String, Any>) ?? Dictionary()
+        self.cardHolder = card["holder"] as! String
+        self.cardNumber = card["number"] as! String
+        self.expiryMonth = card["expiryMonth"] as! String
+        self.expiryYear = card["expiryYear"] as! String
+        self.cvv = card["cvv"] as! String
+        
+        // Check if credit card params are valid
+        checkCreditCardValid(result: self.paymentResult!)
+        
+        // If all are valid, start a transaction
+        do {
+            let params = try OPPCardPaymentParams(
+                checkoutID: self.checkoutID,
+                paymentBrand: self.brand.rawValue,
+                holder: self.cardHolder,
+                number: self.cardNumber,
+                expiryMonth: self.expiryMonth,
+                expiryYear: self.expiryYear,
+                cvv: self.cvv
+            )
+            
+            params.shopperResultURL = Bundle.main.bundleIdentifier! + shopperResultURLSuffix
+            
+            self.transaction  = OPPTransaction(paymentParams: params)
+            self.provider.submitTransaction(self.transaction!) {
+                (transaction, error) in
+                guard let transaction = self.transaction else {
+                    self.paymentResult!(
+                        FlutterError(
+                            code: "0.3",
+                            message: error?.localizedDescription,
+                            details: ""
+                        )
+                    )
+                    
+                    return
+                }
+                                
+                // The code 6000 is for when the user abort the process by pressing "Cancel".
+                if(error != nil) {
+                    let errorCode = (error! as NSError).code
+                    if(errorCode == 6000){
+                        UIApplication.shared.delegate?.window??.rootViewController?.dismiss(animated: true)
+                        self.paymentResult!("canceled")
+                    } else {
+                        self.paymentResult!(
+                            FlutterError(
+                                code: "0.3",
+                                message: error?.localizedDescription,
+                                details: ""
+                            )
+                        )
+                    }
+                } else {
+                    // Redirect from the 3DSecure page
+                    if (transaction.threeDS2Info != nil){
+                        UIApplication.shared.delegate?.window??.rootViewController?.dismiss(animated: true)
+                        self.paymentResult!("success")
+                    }
+                    // when redirect
+                    if transaction.type == .asynchronous {
+                        self.safariVC = SFSafariViewController(url: self.transaction!.redirectURL!)
+                        self.safariVC?.delegate = self;
+                        UIApplication.shared.windows.first?.rootViewController!.present(self.safariVC!, animated: true, completion: nil)
+                        
+                    } else if transaction.type == .synchronous {
+                        // Send request to your server to obtain transaction status.
+                        self.paymentResult!("synchronous")
+                    } else {
+                        // Handle the error
+                        self.paymentResult!(
+                            FlutterError(
+                                code: "0.3",
+                                message: error?.localizedDescription,
+                                details: ""
+                            )
+                        )
+                    }
+                }
+            }
+            
+        } catch {
+            self.paymentResult!(
+                FlutterError(
+                    code: "0.3",
+                    message: error.localizedDescription,
+                    details: ""
+                )
+            )
+        }
+    }
+
+    
     
     private func onApplePay(args:Dictionary<String, Any>) {
         self.appleMerchantId = args["appleMerchantId"] as! String
