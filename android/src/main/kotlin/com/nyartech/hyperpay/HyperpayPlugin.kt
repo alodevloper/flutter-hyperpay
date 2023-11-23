@@ -24,6 +24,8 @@ import io.flutter.embedding.engine.plugins.lifecycle.HiddenLifecycleReference
 import com.oppwa.mobile.connect.exception.*
 import com.oppwa.mobile.connect.payment.*
 import com.oppwa.mobile.connect.payment.card.*
+import com.oppwa.mobile.connect.payment.stcpay.STCPayPaymentParams
+import com.oppwa.mobile.connect.payment.stcpay.STCPayVerificationOption
 import com.oppwa.mobile.connect.provider.*
 
 
@@ -182,13 +184,6 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
                 checkoutID = (args["checkoutID"] as String?)!!
                 brand = Brand.valueOf(args["brand"].toString())
 
-                val card: Map<String, Any> = args["card"] as Map<String, Any>
-                cardHolder = (card["holder"] as String?)!!
-                cardNumber = (card["number"] as String?)!!
-                expiryMonth = (card["expiryMonth"] as String?)!!
-                expiryYear = (card["expiryYear"] as String?)!!
-                cvv = (card["cvv"] as String?)!!
-
                 when (brand) {
                     // If the brand is not provided it returns an error result
                     Brand.UNKNOWN -> result.error(
@@ -196,32 +191,43 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
                             "Please provide a valid brand",
                             ""
                     )
-                    Brand.STCPAY -> {
-                        checkoutID = (args["checkoutID"] as String?)!!
-                        phoneNumber = (args["phoneNumber"] as String?)!!
+                     Brand.STCPAY -> {
+                         // stc-pay
+                         checkoutID = (args["checkoutID"] as String?)!!
+                         phoneNumber = (args["phoneNumber"] as String?)!!
 
-                        val paymentParams: STCPayPaymentParams = STCPayPaymentParams(
-                            checkoutID, 
-                            STCPayVerificationOption.MOBILE_PHONE,
-                        );
+                         val paymentParams = STCPayPaymentParams(
+                             checkoutID,
+                             STCPayVerificationOption.MOBILE_PHONE,
 
-                        paymentParams.mobilePhoneNumber = phoneNumber;
+                         );
+                         // add in customer.mobile when getCheckoutId
+                         // paymentParams.mobilePhoneNumber = phoneNumber;
 
-                        //Set shopper result URL
-                        paymentParams.shopperResultUrl = "$shopperResultUrl://result"
 
-                        try {
-                            val transaction = Transaction(paymentParams)
-                            paymentProvider?.submitTransaction(transaction, this)
-                        } catch (e: PaymentException) {
-                            result.error(
-                                "0.2",
-                                e.localizedMessage,
-                                ""
-                            )
-                        }
-                    }
+                         //Set shopper result URL
+                         paymentParams.shopperResultUrl = "$shopperResultUrl://result"
+
+                         try {
+                             val transaction = Transaction(paymentParams)
+                             paymentProvider?.submitTransaction(transaction, this)
+                         } catch (e: PaymentException) {
+                             result.error(
+                                 "0.2",
+                                 e.localizedMessage,
+                                 ""
+                             )
+                         }
+                     }
                     else -> {
+
+                        val card: Map<String, Any> = args["card"] as Map<String, Any>
+                        cardHolder = (card["holder"] as String?)!!
+                        cardNumber = (card["number"] as String?)!!
+                        expiryMonth = (card["expiryMonth"] as String?)!!
+                        expiryYear = (card["expiryYear"] as String?)!!
+                        cvv = (card["cvv"] as String?)!!
+
                         checkCreditCardValid(result)
 
                         val paymentParams: PaymentParams = CardPaymentParams(

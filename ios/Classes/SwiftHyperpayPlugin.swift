@@ -219,10 +219,10 @@ public class SwiftHyperpayPlugin: UINavigationController, FlutterPlugin, SFSafar
         self.phoneNumber = args["phoneNumber"] as! String
         
         do {
-            // TODO implement stc pay
+
             let params = try OPPSTCPayPaymentParams(
                 checkoutID: self.checkoutID,
-                phoneNumber: self.phoneNumber,
+                verificationOption: OPPSTCPayVerificationOption.phone
             )
             
             params.shopperResultURL = Bundle.main.bundleIdentifier! + shopperResultURLSuffix
