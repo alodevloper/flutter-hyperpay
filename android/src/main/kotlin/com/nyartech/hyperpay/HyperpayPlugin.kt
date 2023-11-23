@@ -194,7 +194,7 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
                      Brand.STCPAY -> {
                          // stc-pay
                          checkoutID = (args["checkoutID"] as String?)!!
-                         phoneNumber = (args["phoneNumber"] as String?)!!
+                        //  phoneNumber = (args["phoneNumber"] as String?)!!
 
                          val paymentParams = STCPayPaymentParams(
                              checkoutID,

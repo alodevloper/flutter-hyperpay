@@ -118,7 +118,7 @@ class HyperpayPlugin {
   /// This method will throw a [NOT_SUPPORTED] error on any platform other than iOS.
   Future<PaymentStatus> payWithStcPay(
     String checkoutId,
-    String phoneNumber,
+    // String phoneNumber,
   ) async {
     try {
       final result = await _channel.invokeMethod(
@@ -126,7 +126,7 @@ class HyperpayPlugin {
         {
           'checkoutID': checkoutId,
           'brand': BrandType.stcPay.name.toUpperCase(),
-          'phoneNumber': phoneNumber,
+          // 'phoneNumber': phoneNumber,
         },
       );
 

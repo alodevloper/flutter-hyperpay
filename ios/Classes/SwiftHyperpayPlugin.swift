@@ -216,7 +216,7 @@ public class SwiftHyperpayPlugin: UINavigationController, FlutterPlugin, SFSafar
 
 
     private func onStcPay(args:Dictionary<String, Any>) {
-        self.phoneNumber = args["phoneNumber"] as! String
+        // self.phoneNumber = args["phoneNumber"] as! String
         
         do {
 
