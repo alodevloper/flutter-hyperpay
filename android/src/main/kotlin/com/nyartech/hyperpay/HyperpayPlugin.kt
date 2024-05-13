@@ -199,7 +199,6 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
                          val paymentParams = STCPayPaymentParams(
                              checkoutID,
                              STCPayVerificationOption.MOBILE_PHONE,
-
                          );
                          // add in customer.mobile when getCheckoutId
                          // paymentParams.mobilePhoneNumber = phoneNumber;
