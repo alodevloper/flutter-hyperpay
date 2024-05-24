@@ -39,9 +39,9 @@ android {
 }
 
 dependencies {
-    api(name: "oppwa.mobile-6.0.0-release", ext: 'aar')
-    releaseImplementation(name: "ipworks3ds_sdk_8648_deploy", ext: 'aar')
-    debugImplementation(name: "ipworks3ds_sdk_8648", ext: 'aar')
+    api(name: "oppwa.mobile-release", ext: 'aar')
+    releaseImplementation(name: "ipworks3ds_sdk_deploy", ext: 'aar')
+    debugImplementation(name: "ipworks3ds_sdk", ext: 'aar')
     implementation 'androidx.appcompat:appcompat:1.4.2'
     implementation 'com.google.android.material:material:1.6.1'
     implementation 'com.google.android.gms:play-services-wallet:19.1.0'

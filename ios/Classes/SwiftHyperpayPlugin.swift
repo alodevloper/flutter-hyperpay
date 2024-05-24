@@ -48,8 +48,7 @@ public class SwiftHyperpayPlugin: UINavigationController, FlutterPlugin, SFSafar
     let shopperResultURLSuffix = ".payments://result";
     
     public func onThreeDSChallengeRequired(completion: @escaping (UINavigationController) -> Void) {
-        let rootViewController = UIApplication.shared.delegate?.window??.rootViewController as! UINavigationController
-
+        let rootViewController = UIApplication.shared.delegate?.window??.rootViewController as! FlutterViewController
         let nc = UINavigationController()
         nc.delegate = self
         
