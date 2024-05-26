@@ -37,6 +37,7 @@ public class SwiftHyperpayPlugin: UINavigationController, FlutterPlugin, SFSafar
     var transaction:OPPTransaction?
     var paymentResult: FlutterResult?
     var safariVC:SFSafariViewController?
+    var fVController:FlutterViewController?
     
     /// The URL that redirects the user back to the application after authroization is complete.
     var shopperResultURL:String = ""
@@ -48,14 +49,12 @@ public class SwiftHyperpayPlugin: UINavigationController, FlutterPlugin, SFSafar
     let shopperResultURLSuffix = ".payments://result";
     
     public func onThreeDSChallengeRequired(completion: @escaping (UINavigationController) -> Void) {
-        let rootViewController = UIApplication.shared.delegate?.window??.rootViewController as! FlutterViewController
+        // NSLog("onThreeDSChallengeRequired: ------------------> ")
+        fVController = UIApplication.shared.delegate?.window??.rootViewController as? FlutterViewController
         let nc = UINavigationController()
         nc.delegate = self
-        
-        DispatchQueue.main.async {
-            rootViewController.present(nc, animated: true) {
-                completion(nc)
-            }
+        fVController?.present(nc, animated: true) {
+            completion(nc)
         }
     }
     
@@ -66,11 +65,13 @@ public class SwiftHyperpayPlugin: UINavigationController, FlutterPlugin, SFSafar
     }
     
     public func paymentAuthorizationViewControllerDidFinish(_ controller: PKPaymentAuthorizationViewController) {
+        // NSLog("paymentAuthorizationViewControllerDidFinish: ------------------> ")
         controller.dismiss(animated: true, completion: nil)
         self.paymentResult!("canceled")
     }
     
     public func paymentAuthorizationViewController(_ controller: PKPaymentAuthorizationViewController, didAuthorizePayment payment: PKPayment, completion: @escaping (PKPaymentAuthorizationStatus) -> Void) {
+                // NSLog("paymentAuthorizationViewController: ------------------> ")
         
         if let params = try? OPPApplePayPaymentParams(checkoutID: self.checkoutID, tokenData: payment.token.paymentData) as OPPApplePayPaymentParams? {
             
@@ -96,42 +97,14 @@ public class SwiftHyperpayPlugin: UINavigationController, FlutterPlugin, SFSafar
         let instance = SwiftHyperpayPlugin()
         let buttonFactory = ApplePayButtonViewFactory(messenger: registrar.messenger())
 
-        if #available(iOS 13.0, *) {
-            if let delegate = UIApplication.shared.connectedScenes
-                .compactMap({ $0 as? UIWindowScene })
-                .flatMap({ $0.windows })
-                .first(where: { $0.isKeyWindow }) {
-
-                let controller = delegate.rootViewController as? FlutterViewController
-                let navigationController = UINavigationController(rootViewController: controller!)
-
-                delegate.rootViewController?.view.removeFromSuperview()
-                delegate.rootViewController = navigationController
-
-                navigationController.setNavigationBarHidden(true, animated: false)
-
-                delegate.makeKeyAndVisible()
-            }
-        } else {
-            let controller = UIApplication.shared.keyWindow?.rootViewController as? FlutterViewController
-            let navigationController = UINavigationController(rootViewController: controller!)
-
-            UIApplication.shared.keyWindow?.rootViewController?.view.removeFromSuperview()
-            UIApplication.shared.keyWindow?.rootViewController = navigationController
-
-            navigationController.setNavigationBarHidden(true, animated: false)
-
-            UIApplication.shared.keyWindow?.makeKeyAndVisible()
-        }
-
-    registrar.register(buttonFactory, withId: "plugins.nyartech.com/hyperpay/apple_pay_button")
-    registrar.addMethodCallDelegate(instance, channel: channel)
-    registrar.addApplicationDelegate(instance)
+        registrar.register(buttonFactory, withId: "plugins.nyartech.com/hyperpay/apple_pay_button")
+        registrar.addMethodCallDelegate(instance, channel: channel)
+        registrar.addApplicationDelegate(instance)
     }
     
     public func application(_ application: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+        // NSLog("application: ------------------> \(String(describing: Bundle.main.bundleIdentifier))")
         var handler:Bool = false
-        
         // Compare the recieved URL with our URL type
         if url.scheme!.caseInsensitiveCompare(Bundle.main.bundleIdentifier! + ".payments") == .orderedSame {
             self.didReceiveAsynchronousPaymentCallback(result: self.paymentResult!)
@@ -141,12 +114,31 @@ public class SwiftHyperpayPlugin: UINavigationController, FlutterPlugin, SFSafar
         
         return handler
     }
+
+     @objc func didReceiveAsynchronousPaymentCallback(result: @escaping FlutterResult) {
+        // NSLog("didReceiveAsynchronousPaymentCallback: ------------------> ")
+        NotificationCenter.default.removeObserver(
+            self,
+            name: Notification.Name(rawValue: "AsyncPaymentCompletedNotificationKey"),
+            object: nil
+        )
+        
+        self.safariVC?.dismiss(animated: true) {
+            DispatchQueue.main.async {
+                result("success")
+            }
+        }
+        
+    }
     
     public func safariViewControllerDidFinish(_ controller: SFSafariViewController) {
+                // NSLog("safariViewControllerDidFinish: ------------------> ")
+
         self.paymentResult!("canceled")
     }
     
     public func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+                // NSLog("presentationControllerDidDismiss: ------------------> ")
         self.paymentResult!("canceled")
     }
     
@@ -337,11 +329,14 @@ public class SwiftHyperpayPlugin: UINavigationController, FlutterPlugin, SFSafar
                     
                     return
                 }
+                
+                // NSLog("provider.submitTransaction: ------------------> ")
                                 
                 // The code 6000 is for when the user abort the process by pressing "Cancel".
                 if(error != nil) {
                     let errorCode = (error! as NSError).code
                     if(errorCode == 6000){
+                        // NSLog("errorCode == 6000: ------------------> ")
                         UIApplication.shared.delegate?.window??.rootViewController?.dismiss(animated: true)
                         self.paymentResult!("canceled")
                     } else {
@@ -356,17 +351,21 @@ public class SwiftHyperpayPlugin: UINavigationController, FlutterPlugin, SFSafar
                 } else {
                     // Redirect from the 3DSecure page
                     if (transaction.threeDS2Info != nil){
-                        UIApplication.shared.delegate?.window??.rootViewController?.dismiss(animated: true)
+                        // NSLog("threeDS2Info: ------------------> ")
+                        UIApplication.shared.windows.first?.rootViewController!.dismiss(animated: true)
                         self.paymentResult!("success")
                     }
                     // when redirect
                     if transaction.type == .asynchronous {
+                        // NSLog("asynchronous: ------------------> ")
                         self.safariVC = SFSafariViewController(url: self.transaction!.redirectURL!)
                         self.safariVC?.delegate = self;
                         UIApplication.shared.windows.first?.rootViewController!.present(self.safariVC!, animated: true, completion: nil)
                         
                     } else if transaction.type == .synchronous {
+                        // NSLog("synchronous: ------------------> ")
                         // Send request to your server to obtain transaction status.
+                        self.fVController?.dismiss(animated: true, completion: nil)
                         self.paymentResult!("synchronous")
                     } else {
                         // Handle the error
@@ -421,20 +420,7 @@ public class SwiftHyperpayPlugin: UINavigationController, FlutterPlugin, SFSafar
         }
     }
     
-    @objc func didReceiveAsynchronousPaymentCallback(result: @escaping FlutterResult) {
-        NotificationCenter.default.removeObserver(
-            self,
-            name: Notification.Name(rawValue: "AsyncPaymentCompletedNotificationKey"),
-            object: nil
-        )
-        
-        self.safariVC?.dismiss(animated: true) {
-            DispatchQueue.main.async {
-                result("success")
-            }
-        }
-        
-    }
+   
     
     /// This function checks the provided card params and return a PlatformException to Flutter if any are not valid.
     private func checkCreditCardValid(result: @escaping FlutterResult) {
