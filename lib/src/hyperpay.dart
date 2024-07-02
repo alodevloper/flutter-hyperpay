@@ -39,6 +39,26 @@ class HyperpayPlugin {
     return HyperpayPlugin._(config);
   }
 
+  static Future<String?> checkCardValidation({
+    required BrandType brand,
+    required CardInfo card,
+  }) async {
+    try {
+      final result = await _channel.invokeMethod(
+        'check_payment_card',
+        {
+          'brand': brand.name.toUpperCase(),
+          'card': card.toMap(),
+        },
+      );
+      debugPrint('HyperpayPlugin/platformResponse: $result');
+      return result;
+    } catch (e) {
+      debugPrint('HyperpayPlugin/platformResponse: $e');
+      rethrow;
+    }
+  }
+
   /// Perform the transaction using iOS/Android HyperPay SDK.
   ///
   /// It's highly recommended to setup a listner using

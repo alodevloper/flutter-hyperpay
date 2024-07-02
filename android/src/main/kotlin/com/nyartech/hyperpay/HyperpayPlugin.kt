@@ -227,7 +227,11 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
                         expiryYear = (card["expiryYear"] as String?)!!
                         cvv = (card["cvv"] as String?)!!
 
-                        checkCreditCardValid(result)
+                        var validator:String? =  checkCreditCardValid(result)
+                        if(validator != null){
+                            result.error("1.1",validator,"")
+                            return;
+                        }
 
                         val paymentParams: PaymentParams = CardPaymentParams(
                                 checkoutID,
@@ -255,6 +259,25 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
                     }
                 }
             }
+            "check_payment_card" -> {
+                val args: Map<String, Any> = call.arguments as Map<String, Any>
+                brand = Brand.valueOf(args["brand"].toString())
+                val card: Map<String, Any> = args["card"] as Map<String, Any>
+                cardHolder = (card["holder"] as String?)!!
+                cardNumber = (card["number"] as String?)!!
+                expiryMonth = (card["expiryMonth"] as String?)!!
+                expiryYear = (card["expiryYear"] as String?)!!
+                cvv = (card["cvv"] as String?)!!
+
+                var validator:String? =  checkCreditCardValid(result)
+                if(validator != null){
+                    result.success(validator)
+                }else{
+                    result.success(null)
+                }
+
+
+            }
             else -> {
                 result.notImplemented()
             }
@@ -266,38 +289,24 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
      * This function checks the provided card params and return
      * a PlatformException to Flutter if any are not valid.
      * */
-    private fun checkCreditCardValid(result: Result) {
-        if (!CardPaymentParams.isNumberValid(cardNumber,true)) {
-            result.error(
-                    "1.1",
-                    "Card number is not valid for brand ${brand.name}",
-                    ""
-            )
-        } else if (!CardPaymentParams.isHolderValid(cardHolder)) {
-            result.error(
-                    "1.2",
-                    "Holder name is not valid",
-                    ""
-            )
-        } else if (!CardPaymentParams.isExpiryMonthValid(expiryMonth)) {
-            result.error(
-                    "1.3",
-                    "Expiry month is not valid",
-                    ""
-            )
-        } else if (!CardPaymentParams.isExpiryYearValid(expiryYear)) {
-            result.error(
-                    "1.4",
-                    "Expiry year is not valid",
-                    ""
-            )
-        } else if (!CardPaymentParams.isCvvValid(cvv)) {
-            result.error(
-                    "1.5",
-                    "CVV is not valid",
-                    ""
-            )
+    private fun checkCreditCardValid(result: Result): String? {
+        if (!CardPaymentParams.isNumberValid(cardNumber, true)) {
+            return "Card number is not valid for brand ${brand.name}"
         }
+        if (!CardPaymentParams.isHolderValid(cardHolder)) {
+            return "Holder name is not valid"
+        }
+        if (!CardPaymentParams.isExpiryMonthValid(expiryMonth)) {
+            return "Expiry month is not valid"
+        }
+        if (!CardPaymentParams.isExpiryYearValid(expiryYear)) {
+
+            return "Expiry year is not valid"
+        }
+        if (!CardPaymentParams.isCvvValid(cvv)) {
+            return "CVV is not valid"
+        }
+        return null;
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
