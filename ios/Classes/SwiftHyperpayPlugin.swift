@@ -397,6 +397,7 @@ public class SwiftHyperpayPlugin: UINavigationController, FlutterPlugin, SFSafar
         self.appleMerchantId = args["appleMerchantId"] as! String
         self.countryCode = args["countryCode"] as! String
         self.currencyCode = args["currencyCode"] as! String
+        self.label = args["label"] as! String
         self.amount = args["amount"] as! Double
         
         let paymentRequest = OPPPaymentProvider.paymentRequest(
@@ -406,7 +407,7 @@ public class SwiftHyperpayPlugin: UINavigationController, FlutterPlugin, SFSafar
         paymentRequest.currencyCode = self.currencyCode
         
         paymentRequest.paymentSummaryItems = [
-            PKPaymentSummaryItem(label: "Hyperpay",
+            PKPaymentSummaryItem(label: self.label,
                                  amount: NSDecimalNumber(value: self.amount))
         ]
         
