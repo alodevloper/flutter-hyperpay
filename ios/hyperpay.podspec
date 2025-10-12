@@ -23,5 +23,5 @@ A new flutter plugin project.
   s.swift_version = '5.0'
   s.frameworks  = 'PassKit'
 
-  s.dependency 'hyperpay_sdk', '~> 5.1.0'
+  s.dependency 'hyperpay_sdk', '~> 7.2.3'
 end
