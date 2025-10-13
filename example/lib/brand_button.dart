@@ -18,7 +18,7 @@ class BrandButton extends StatelessWidget {
       onPressed: onPressed,
       child: Text(
         brandName,
-        style: Theme.of(context).textTheme.button!.copyWith(color: color),
+        style: Theme.of(context).textTheme.labelLarge!.copyWith(color: color),
       ),
     );
   }

@@ -93,7 +93,7 @@ class _CheckoutViewState extends State<CheckoutView> {
       try {
         final checkoutId = await getCheckOut();
 
-        final result = await hyperpay.pay(checkoutId!, BrandType.mada, card);
+        final result = await hyperpay.pay(checkoutId!, BrandType.master, card);
 
         switch (result) {
           case PaymentStatus.init:
@@ -165,6 +165,7 @@ class _CheckoutViewState extends State<CheckoutView> {
       appleMerchantId: 'merchant.com.emaan.app',
       countryCode: 'SA',
       currencyCode: 'SAR',
+      label: '',
     );
 
     try {

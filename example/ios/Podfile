@@ -1,5 +1,5 @@
 # Uncomment this line to define a global platform for your project
-# platform :ios, '11.0'
+# platform :ios, '13.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -34,7 +34,7 @@ target 'Runner' do
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 
   # hyperpay plugin 
-  pod 'hyperpay_sdk', :git => 'https://github.com/abdullahalamodi/hyperpay_sdk.git'
+  pod 'hyperpay_sdk', :git => 'https://github.com/alodevloper/hyperpay_sdk.git'
   $static_framework = ['hyperpay']
 
   pre_install do |installer|

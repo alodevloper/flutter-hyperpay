@@ -34,6 +34,11 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
+    // ADD THIS BLOCK
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
     defaultConfig {
         minSdkVersion 24
     }
