@@ -1,7 +1,7 @@
 // Module: hyperpay/build.gradle
 
-this also group 'com.nyartech.hyperpay'
-version '1.0'
+// this also group 'com.nyartech.hyperpay'
+// version '1.0'
 
 buildscript {
     repositories {
