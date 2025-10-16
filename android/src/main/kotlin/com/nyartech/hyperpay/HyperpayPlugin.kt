@@ -42,6 +42,7 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
     private lateinit var channel: MethodChannel
     private var channelResult: MethodChannel.Result? = null
 
+    // This is the mutable property causing the compilation error
     private var mActivity: Activity? = null
 
     private var paymentProvider: OppPaymentProvider? = null
@@ -90,20 +91,24 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
         hiddenLifecycleReference = (binding.lifecycle as HiddenLifecycleReference)
         hiddenLifecycleReference?.lifecycle?.addObserver(lifecycleObserver)
 
-        // Remove any underscores from the application ID for Uri parsing
-        // NOTE: It's important to add your application ID as the scheme, followed by ".payments"
-        // without any underscores.
-        shopperResultUrl = mActivity!!.packageName.replace("_", "")
-        shopperResultUrl += ".payments"
+        // Capture activity for safe use in the null-check section
+        val activity = mActivity
+        if (activity != null) {
+            // Remove any underscores from the application ID for Uri parsing
+            // NOTE: It's important to add your application ID as the scheme, followed by ".payments"
+            // without any underscores.
+            shopperResultUrl = activity.packageName.replace("_", "")
+            shopperResultUrl += ".payments"
 
-        binding.addOnNewIntentListener {
-            if (it.scheme?.equals(shopperResultUrl, ignoreCase = true) == true) {
-                redirectData = it.scheme.toString()
+            binding.addOnNewIntentListener {
+                if (it.scheme?.equals(shopperResultUrl, ignoreCase = true) == true) {
+                    redirectData = it.scheme.toString()
 
-                Log.d(TAG, "Success, redirecting to app...")
-                success("success")
+                    Log.d(TAG, "Success, redirecting to app...")
+                    success("success")
+                }
+                true
             }
-            true
         }
     }
 
@@ -117,8 +122,10 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
     }
 
     override fun onDetachedFromActivity() {
-        if (intent != null) {
-            mActivity!!.stopService(intent)
+        // Capture mActivity to a local val before using it
+        val activity = mActivity
+        if (intent != null && activity != null) {
+            activity.stopService(intent)
         }
 
         hiddenLifecycleReference?.lifecycle?.removeObserver(lifecycleObserver)
@@ -151,6 +158,14 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         when (call.method) {
             "setup_service" -> {
+                // Capture mActivity to a local val for safe smart-casting
+                val activity = mActivity
+
+                if (activity == null) {
+                    result.error("0.4", "Activity not attached (missing in setup_service call)", null)
+                    return
+                }
+
                 try {
                     val args: Map<String, Any> = call.arguments as Map<String, Any>
 
@@ -158,16 +173,18 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
                     var providerMode = Connect.ProviderMode.TEST;
 
                     if(paymentMode == "LIVE") {
-                        providerMode =  Connect.ProviderMode.LIVE;
+                        providerMode = Connect.ProviderMode.LIVE;
                     }
 
-                    paymentProvider = OppPaymentProvider(mActivity!!.application, providerMode);
+                    // Use the safe 'activity' variable
+                    paymentProvider = OppPaymentProvider(activity.application, providerMode);
 
                     // Set the 3DS listener
-                    paymentProvider!!.setThreeDSWorkflowListener{mActivity}
+                    paymentProvider!!.setThreeDSWorkflowListener{activity}
 
                     // Bind CustomTabs service with the current app activity
-                    CustomTabsClient.bindCustomTabsService(mActivity!!, CUSTOM_TAB_PACKAGE_NAME, cctConnection);
+                    // Use the safe 'activity' variable
+                    CustomTabsClient.bindCustomTabsService(activity, CUSTOM_TAB_PACKAGE_NAME, cctConnection);
 
                     Log.d(TAG, "Payment mode is set to $paymentMode")
                     result.success(null)
@@ -187,37 +204,37 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
                 when (brand) {
                     // If the brand is not provided it returns an error result
                     Brand.UNKNOWN -> result.error(
-                            "0.1",
-                            "Please provide a valid brand",
-                            ""
+                                "0.1",
+                                "Please provide a valid brand",
+                                ""
                     )
-                     Brand.STCPAY -> {
-                         // stc-pay
-                         checkoutID = (args["checkoutID"] as String?)!!
-                        //  phoneNumber = (args["phoneNumber"] as String?)!!
+                    Brand.STCPAY -> {
+                            // stc-pay
+                            checkoutID = (args["checkoutID"] as String?)!!
+                        //  phoneNumber = (args["phoneNumber"] as String?)!!
 
-                         val paymentParams = STCPayPaymentParams(
-                             checkoutID,
-                             STCPayVerificationOption.MOBILE_PHONE,
-                         );
-                         // add in customer.mobile when getCheckoutId
-                         // paymentParams.mobilePhoneNumber = phoneNumber;
+                            val paymentParams = STCPayPaymentParams(
+                                    checkoutID,
+                                    STCPayVerificationOption.MOBILE_PHONE,
+                            );
+                            // add in customer.mobile when getCheckoutId
+                            // paymentParams.mobilePhoneNumber = phoneNumber;
 
 
-                         //Set shopper result URL
-                         paymentParams.shopperResultUrl = "$shopperResultUrl://result"
+                            //Set shopper result URL
+                            paymentParams.shopperResultUrl = "$shopperResultUrl://result"
 
-                         try {
-                             val transaction = Transaction(paymentParams)
-                             paymentProvider?.submitTransaction(transaction, this)
-                         } catch (e: PaymentException) {
-                             result.error(
-                                 "0.2",
-                                 e.localizedMessage,
-                                 ""
-                             )
-                         }
-                     }
+                            try {
+                                val transaction = Transaction(paymentParams)
+                                paymentProvider?.submitTransaction(transaction, this)
+                            } catch (e: PaymentException) {
+                                result.error(
+                                        "0.2",
+                                        e.localizedMessage,
+                                        ""
+                                )
+                            }
+                        }
                     else -> {
 
                         val card: Map<String, Any> = args["card"] as Map<String, Any>
@@ -251,9 +268,9 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
                             paymentProvider?.submitTransaction(transaction, this)
                         } catch (e: PaymentException) {
                             result.error(
-                                    "0.3",
-                                    e.localizedMessage,
-                                    ""
+                                        "0.3",
+                                        e.localizedMessage,
+                                        ""
                             )
                         }
                     }
@@ -322,6 +339,16 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
                 val uri = Uri.parse(transaction.redirectUrl)
                 redirectData = ""
 
+                // 💥 FIX: Capture mActivity into an immutable local variable 'activity'
+                // This resolves the smart-cast compiler error.
+                val activity = mActivity 
+
+                if (activity == null) {
+                     // Handle the case where the activity is unexpectedly null
+                     error("0.5", "Activity not attached when starting redirect URL", null)
+                     return
+                }
+
                 val session = mCustomTabsClient?.newSession(object : CustomTabsCallback() {
                     override fun onNavigationEvent(navigationEvent: Int, extras: Bundle?) {
                         val w = Log.w(TAG, "onNavigationEvent: Code = $navigationEvent")
@@ -339,15 +366,17 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
 
                 val builder = CustomTabsIntent.Builder(session)
                 mCustomTabsIntent = builder.build()
-                mActivity?.intent?.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
+                // Use the safe 'activity' variable instead of mActivity!!
+                activity.intent?.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
                 mCustomTabsIntent?.intent?.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
-                mCustomTabsIntent?.launchUrl(mActivity!!, uri)
+                // Use the safe 'activity' variable instead of mActivity!!
+                mCustomTabsIntent?.launchUrl(activity, uri) 
             }
         } catch (e: Exception) {
             e.printStackTrace()
 
             // Display error
-            error("${e.message}️")
+            error("0.6", "${e.message}", null)
         }
     }
 
@@ -360,6 +389,8 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
     }
 
     override fun onThreeDSChallengeRequired(): Activity {
-        return mActivity!!
+        // 💥 FIX: Safe way to get the Activity, throwing an exception if null is necessary here 
+        // because the Oppwa SDK requires a non-null Activity return.
+        return mActivity ?: throw IllegalStateException("Activity is required for 3DS challenge but is null.")
     }
 }
