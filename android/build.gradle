@@ -70,8 +70,4 @@ dependencies {
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'com.google.code.gson:gson:2.11.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7'
-    debugImplementation 'com.oppwa.mobile:ipworks3ds_sdk:6.2.4'
-    
-    // For PRODUCTION (use the _deploy version for release builds)
-    releaseImplementation 'com.oppwa.mobile:ipworks3ds_sdk_deploy:6.2.4'
 }
