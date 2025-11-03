@@ -59,7 +59,6 @@ kotlin {
 
 dependencies {
     api(name: "oppwa.mobile-release", ext: 'aar')
-    releaseImplementation(name: "ipworks3ds_sdk_deploy", ext: 'aar')
     debugImplementation(name: "ipworks3ds_sdk", ext: 'aar')
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
