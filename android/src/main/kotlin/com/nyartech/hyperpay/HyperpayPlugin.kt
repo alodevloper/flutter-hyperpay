@@ -177,7 +177,7 @@ class HyperpayPlugin : FlutterPlugin, MethodCallHandler, ITransactionListener, A
                     }
 
                     // Use the safe 'activity' variable
-                    paymentProvider = OppPaymentProvider(activity.application, providerMode,Connect.Region.EU);
+                    paymentProvider = OppPaymentProvider(activity.application, providerMode);
 
                     // Set the 3DS listener
                     paymentProvider!!.setThreeDSWorkflowListener{activity}
