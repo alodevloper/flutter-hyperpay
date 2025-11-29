@@ -14,7 +14,7 @@ import SafariServices
 /// Currently supported brands: VISA, MastrCard, MADA, and Apple Pay.
 public class SwiftHyperpayPlugin: UINavigationController, FlutterPlugin, SFSafariViewControllerDelegate, UIAdaptivePresentationControllerDelegate, PKPaymentAuthorizationViewControllerDelegate, OPPThreeDSEventListener, UINavigationControllerDelegate {
     
-    var provider:OPPPaymentProvider = OPPPaymentProvider(mode: OPPProviderMode.test)
+    var provider:OPPPaymentProvider = OPPPaymentProvider.init(mode: .test)
     var brand:Brand = Brand.UNKNOWN
     
     var checkoutID:String = ""
