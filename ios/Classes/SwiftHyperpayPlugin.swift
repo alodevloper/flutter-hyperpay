@@ -151,7 +151,7 @@ public class SwiftHyperpayPlugin: UINavigationController, FlutterPlugin, SFSafar
             paymentMode = args["mode"] as! String
             
             if(paymentMode == "LIVE") {
-                self.provider.mode = OPPProviderMode.live
+                self.provider = OPPPaymentProvider.init(mode: .live)
             } else {
                 // let visaSchemeConfig = OPPThreeDSSchemeConfig(dsRefId: "TEST_VISA_DS_ID",
                 //                                               dsEncryptCert: DS_ENCRYPT_CERT,
