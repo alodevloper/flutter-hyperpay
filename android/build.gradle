@@ -31,7 +31,9 @@ apply plugin: 'kotlin-android'
 android {
     namespace 'com.nyartech.hyperpay'
     compileSdkVersion 32
-
+     buildFeatures {
+        viewBinding true
+    }
     compileOptions {
         // Java Target: 17
         sourceCompatibility JavaVersion.VERSION_17
